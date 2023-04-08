@@ -121,9 +121,34 @@ select * from goal_details;
 select * from match_details;
 select * from soccer_country;
 
--- select 
--- from player_mast as pm, goal_details as gd, match_details as md, soccer_country as sc
--- where gd.player_id = pm.player_id and md.match_no = gd.match_no and sc.country_id = md.team_id;
+select distinct pm.player_name
+from player_mast as pm, goal_details as gd, match_details as md, soccer_country as sc
+where gd.player_id = pm.player_id and md.match_no = gd.match_no and sc.country_id = md.team_id
+and sc.country_name = 'Portugal'
+and md.match_no in (select md.match_no
+					from match_details as md, soccer_country as sc
+					where md.team_id = sc.country_id
+					and sc.country_name in ('Portugal', 'Hungary')
+					group by md.match_no
+					having count(team_id) = 2)
+and goal_id in (select max(goal_id) 
+				from goal_details as gd
+                join soccer_country as sc on gd.team_id = sc.country_id
+                where gd.match_no in (select md.match_no
+										from match_details as md, soccer_country as sc
+										where md.team_id = sc.country_id
+										and sc.country_name in ('Portugal', 'Hungary')
+										group by md.match_no
+										having count(team_id) = 2) 
+				and sc.country_name = 'Portugal');
+
+-- subquery to find match_no between Portugal and Hungary
+select md.match_no
+from match_details as md, soccer_country as sc
+where md.team_id = sc.country_id
+and sc.country_name in ('Portugal', 'Hungary')
+group by md.match_no
+having count(team_id) = 2;
 
 # 9. Write a SQL query to find the second-highest stoppage time in the second half.
 -- Return Stoppage time.
