@@ -53,16 +53,16 @@ having count(team_id) = 2;
 # METHOD 2
 select g.match_no
 from (select match_no 
-		from match_details as md
-		join soccer_country as sc 
+	from match_details as md
+	join soccer_country as sc 
         on md.team_id = sc.country_id
         where sc.country_name = 'Germany') as g
 join
-(select match_no 
-		from match_details as md
-		join soccer_country as sc 
-        on md.team_id = sc.country_id
-        where sc.country_name = 'Poland') as p
+	(select match_no 
+	from match_details as md
+	join soccer_country as sc 
+	on md.team_id = sc.country_id
+	where sc.country_name = 'Poland') as p
 on g.match_no = p.match_no;
 
 # ###########################################################################################################################
@@ -126,21 +126,21 @@ from player_mast as pm, goal_details as gd, match_details as md, soccer_country 
 where gd.player_id = pm.player_id and md.match_no = gd.match_no and sc.country_id = md.team_id
 and sc.country_name = 'Portugal'
 and md.match_no in (select md.match_no
+			from match_details as md, soccer_country as sc
+			where md.team_id = sc.country_id
+			and sc.country_name in ('Portugal', 'Hungary')
+			group by md.match_no
+			having count(team_id) = 2)
+and goal_id in (select max(goal_id) 
+		from goal_details as gd
+                join soccer_country as sc on gd.team_id = sc.country_id
+                where gd.match_no in (select md.match_no
 					from match_details as md, soccer_country as sc
 					where md.team_id = sc.country_id
 					and sc.country_name in ('Portugal', 'Hungary')
 					group by md.match_no
-					having count(team_id) = 2)
-and goal_id in (select max(goal_id) 
-				from goal_details as gd
-                join soccer_country as sc on gd.team_id = sc.country_id
-                where gd.match_no in (select md.match_no
-										from match_details as md, soccer_country as sc
-										where md.team_id = sc.country_id
-										and sc.country_name in ('Portugal', 'Hungary')
-										group by md.match_no
-										having count(team_id) = 2) 
-				and sc.country_name = 'Portugal');
+					having count(team_id) = 2) 
+		and sc.country_name = 'Portugal');
 
 -- subquery to find match_no between Portugal and Hungary
 select md.match_no
@@ -159,9 +159,9 @@ select * from match_mast;
 select stop2_sec
 from match_mast
 where stop2_sec in (select max(stop2_sec) 
-					from match_mast 
-                    where stop2_sec < (select max(stop2_sec) 
-										from match_mast));
+			from match_mast 
+                    	where stop2_sec < (select max(stop2_sec) 
+			from match_mast));
 
 # 10. Write a SQL query to find the teams played the match where the second highest stoppage time had been added in the second half of play. 
 -- Return country name of the teams.
@@ -175,9 +175,9 @@ select sc.country_name
 from soccer_country as sc, match_details as md, match_mast as mm
 where sc.country_id = md.team_id and mm.match_no = md.match_no
 and mm.stop2_sec in (select max(stop2_sec) 
-					from match_mast 
-                    where stop2_sec < (select max(stop2_sec) 
-										from match_mast));
+			from match_mast 
+                    	where stop2_sec < (select max(stop2_sec) 
+			from match_mast));
 
 
 # 11. Write a SQL query to find the teams played the match where second highest stoppage time had been added in second half of play. 
@@ -189,9 +189,9 @@ select * from match_mast;
 select match_no, play_date, stop2_sec
 from match_mast 
 where stop2_sec in (select max(stop2_sec)
-					from match_mast
-					where stop2_sec < (select max(stop2_sec)
-										from match_mast));
+			from match_mast
+			where stop2_sec < (select max(stop2_sec)
+			from match_mast));
 
 # 12. From the following tables, write a SQL query to find the team, which was defeated by Portugal in EURO cup 2016 final. 
 -- Return the country name of the team. 
@@ -215,8 +215,8 @@ select playing_club, count(player_id)
 from player_mast
 group by playing_club
 having count(player_id) >= all(select count(player_id)
-							from player_mast
-                            group by playing_club);
+				from player_mast
+                            	group by playing_club);
 
 -- subquery to find count(player_id) group by playing_club                            
 select count(player_id) from player_mast group by playing_club;
@@ -263,11 +263,11 @@ from player_mast as pm, penalty_gk as pg, soccer_country as sc
 where pm.player_id = pg.player_gk and pg.team_id = sc.country_id
 and sc.country_name = 'Italy'
 and pg.match_no in (select match_no
-					from penalty_gk as pg, soccer_country as sc
-					where pg.team_id = sc.country_id
-					and sc.country_name in ('Germany', 'Italy')
-					group by match_no
-					having count(team_id) = 2);
+			from penalty_gk as pg, soccer_country as sc
+			where pg.team_id = sc.country_id
+			and sc.country_name in ('Germany', 'Italy')
+			group by match_no
+			having count(team_id) = 2);
 
 -- subquery to find match_no where country in (Germany, Italy)
 select match_no
@@ -304,7 +304,7 @@ where pm.team_id = sc.country_id
 and sc.country_name = 'England'
 and pm.posi_to_play = 'GK';
 
-# 19. From the following table, write a SQL query to find the Liverpool players who were part of England's squad at the 2016 Euro Cup. 
+# 19. From the following table, write a SQL query to find the Liverpool players who were part of England squad at the 2016 Euro Cup. 
 -- Return player name, jersey number, position to play and age.
 -- use tables player_mast, soccer_country
 
@@ -329,7 +329,7 @@ from player_mast as pm, goal_details as gd, soccer_country as sc
 where pm.player_id = gd.player_id and gd.team_id = sc.country_id
 and gd.match_no = 50
 and goal_id in (select max(goal_id)
-				from goal_details
+		from goal_details
                 where match_no = 50);
 
 -- subquery to find all goal_id in match_no = 50;
@@ -337,7 +337,7 @@ select goal_id
 from goal_details
 where match_no = 50;
 
-# 21. From the following table, write a SQL query to find out who was the captain of Portugal's winning EURO cup 2016 team. 
+# 21. From the following table, write a SQL query to find out who was the captain of Portugal winning EURO cup 2016 team. 
 -- Return the captain name.
 -- use tables player_mast, match_captain, match_details
 
@@ -350,7 +350,7 @@ from player_mast as pm, match_captain as mc, match_details as md
 where pm.player_id = mc.player_captain and mc.team_id = md.team_id
 and md.play_stage = 'F' and md.win_lose = 'W';
 
-# 22. From the following tables, write a SQL query to count the number of players played for 'France’ in the final. 
+# 22. From the following tables, write a SQL query to count the number of players played for 'France' in the final. 
 -- Return 'Number of players shared fields'.
 -- use tables player_in_out, match_mast, soccer_country
 
@@ -404,9 +404,9 @@ from penalty_shootout as ps, soccer_country as sc
 where ps.team_id = sc.country_id
 group by sc.country_name
 having count(kick_id) >= all(select count(kick_id)
-							from penalty_shootout as ps, soccer_country as sc
-							where ps.team_id = sc.country_id
-							group by sc.country_name);
+				from penalty_shootout as ps, soccer_country as sc
+				where ps.team_id = sc.country_id
+				group by sc.country_name);
 
 
 -- subquery to find count(kick_id) when group by country_name
@@ -428,9 +428,9 @@ from player_mast as pm, penalty_shootout as ps, soccer_country as sc
 where pm.player_id = ps.player_id and pm.team_id = sc.country_id
 group by sc.country_name, pm.player_name, pm.jersey_no
 having count(ps.kick_id) >= all(select count(kick_id)
-								from player_mast as pm, penalty_shootout as ps
-								where pm.player_id = ps.player_id
-								group by pm.player_name);
+				from player_mast as pm, penalty_shootout as ps
+				where pm.player_id = ps.player_id
+				group by pm.player_name);
 
 -- subquery to find count(kick_id) when group by player_name
 select count(kick_id)
@@ -449,8 +449,8 @@ select match_no, count(kick_id) as no_of_shots
 from penalty_shootout
 group by match_no
 having count(kick_id) >= all(select count(kick_id)
-							from penalty_shootout
-							group by match_no);
+				from penalty_shootout
+				group by match_no);
 
 -- subquery to find count(kick_id) when group by match_no
 select count(kick_id)
@@ -469,19 +469,19 @@ select distinct ps.match_no, sc.country_name
 from penalty_shootout as ps, soccer_country as sc
 where ps.team_id = sc.country_id
 and ps.match_no in (select match_no
-					from penalty_shootout
-					group by match_no
-					having count(kick_id) >= all(select count(kick_id)
-												from penalty_shootout
-												group by match_no));
+			from penalty_shootout
+			group by match_no
+			having count(kick_id) >= all(select count(kick_id)
+							from penalty_shootout
+							group by match_no));
                                                 
 -- subquery to find match_no where most penalty shots were taken
 select match_no
 from penalty_shootout
 group by match_no
 having count(kick_id) >= all(select count(kick_id)
-							from penalty_shootout
-							group by match_no);
+				from penalty_shootout
+				group by match_no);
 
 # ##########################################################################################################################
 
@@ -501,11 +501,11 @@ where ps.player_id = pm.player_id and pm.team_id = sc.country_id
 and sc.country_name = 'Portugal'
 and ps.kick_no = 7
 and ps.match_no in (select md.match_no
-					from match_details as md, soccer_country as sc
-					where md.team_id = sc.country_id
-					and sc.country_name in ('Portugal', 'Poland')
-					group by md.match_no
-					having count(team_id) = 2);
+			from match_details as md, soccer_country as sc
+			where md.team_id = sc.country_id
+			and sc.country_name in ('Portugal', 'Poland')
+			group by md.match_no
+			having count(team_id) = 2);
 
 -- subquery to find match_id of the match between 'Portugal' and 'Poland'
 select md.match_no
@@ -561,8 +561,8 @@ select * from goal_details;
 select goal_time
 from goal_details
 where goal_time in (select min(goal_time)
-					from goal_details
-					where goal_time > 5);
+			from goal_details
+			where goal_time > 5);
                     
 -- ------------------------------------------
 -- subquery to find all goal_time > 5
